@@ -36,4 +36,28 @@ def menu():
         elif teclas[pygame.K_2]:
             print("Configurações!")
 
+def jogo():
+    global personagem_pos
+    while True:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+        teclas = pygame.key.get_pressed()
+        if teclas[pygame.K_LEFT]:
+            personagem_pos[0] -= 5
+        if teclas[pygame.K_RIGHT]:
+            personagem_pos[0] += 5
+        if teclas[pygame.K_UP]:
+            personagem_pos[1] -= 5
+        if teclas[pygame.K_DOWN]:
+            personagem_pos[1] += 5
+
+        tela.fill(PRETO)
+        pygame.draw.rect(tela, VERDE, (personagem_pos[0], personagem_pos[1], 50, 50))
+        pygame.display.flip()
+
 menu()
+jogo()
+
