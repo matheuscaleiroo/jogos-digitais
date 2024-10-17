@@ -1,0 +1,39 @@
+import pygame
+import sys
+
+pygame.init()
+
+largura, altura = 800, 600
+tela = pygame.display.set_mode((largura, altura))
+pygame.display.set_caption("Menu do Jogo")
+
+PRETO = (0, 0, 0)
+BRANCO = (255, 255, 255)
+fonte = pygame.font.SysFont(None, 55)
+
+def desenhar_texto(texto, x, y):
+    superficie = fonte.render(texto, True, BRANCO)
+    tela.blit(superficie, (x, y))
+
+def menu():
+    while True:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+        tela.fill(PRETO)
+
+        desenhar_texto("Menu do Jogo", largura // 2 - 100, altura // 4)
+        desenhar_texto("1. Iniciar Jogo", largura // 2 - 150, altura // 2 - 50)
+        desenhar_texto("2. Configurações", largura // 2 - 150, altura // 2)
+
+        pygame.display.flip()
+
+        teclas = pygame.key.get_pressed()
+        if teclas[pygame.K_1]:
+            print("Iniciar Jogo!")
+        elif teclas[pygame.K_2]:
+            print("Configurações!")
+
+menu()
