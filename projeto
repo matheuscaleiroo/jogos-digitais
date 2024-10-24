@@ -1,15 +1,30 @@
 import pygame
 import sys
+import time
 
 pygame.init()
 
-largura, altura = 800, 600
-tela = pygame.display.set_mode((largura, altura))
+# Configuração para tela cheia
+tela = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+largura, altura = tela.get_size()
 pygame.display.set_caption("Menu do Jogo")
 
 PRETO = (0, 0, 0)
 BRANCO = (255, 255, 255)
+VERDE = (0, 255, 0)
+AZUL = (0, 0, 255)
 fonte = pygame.font.SysFont(None, 55)
+
+# Posição inicial do personagem centralizado no corredor
+personagem_pos = [largura // 2 - 25, altura // 2 - 25]  
+largura_personagem = 50
+altura_personagem = 50
+
+# Variáveis do cronômetro
+tempo_limite = 60  # 1 minuto em segundos
+
+# Variável do placar
+placar = 0
 
 def desenhar_texto(texto, x, y):
     superficie = fonte.render(texto, True, BRANCO)
@@ -27,17 +42,29 @@ def menu():
         desenhar_texto("Menu do Jogo", largura // 2 - 100, altura // 4)
         desenhar_texto("1. Iniciar Jogo", largura // 2 - 150, altura // 2 - 50)
         desenhar_texto("2. Configurações", largura // 2 - 150, altura // 2)
+        desenhar_texto("Pressione ESC para Sair", largura // 2 - 150, altura // 2 + 50)
 
         pygame.display.flip()
 
         teclas = pygame.key.get_pressed()
         if teclas[pygame.K_1]:
             print("Iniciar Jogo!")
+            jogo()
         elif teclas[pygame.K_2]:
             print("Configurações!")
+        elif teclas[pygame.K_ESCAPE]:
+            pygame.quit()
+            sys.exit()
 
 def jogo():
-    global personagem_pos
+    global personagem_pos, placar
+    velocidade = 3  # Velocidade do personagem
+    corredor_rect = pygame.Rect(largura // 2 - 300, altura // 2 - 200, 600, 400) # Definindo o corredor
+    quadrado = pygame.Rect(largura // 6, altura // 6, 300, 200)
+
+    # Começar o cronômetro
+    tempo_inicial = time.time()
+
     while True:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
@@ -45,19 +72,72 @@ def jogo():
                 sys.exit()
 
         teclas = pygame.key.get_pressed()
-        if teclas[pygame.K_LEFT]:
-            personagem_pos[0] -= 5
-        if teclas[pygame.K_RIGHT]:
-            personagem_pos[0] += 5
-        if teclas[pygame.K_UP]:
-            personagem_pos[1] -= 5
-        if teclas[pygame.K_DOWN]:
-            personagem_pos[1] += 5
+        posicao_anterior = personagem_pos[:]
 
+        if teclas[pygame.K_a]:
+            personagem_pos[0] -= velocidade
+        if teclas[pygame.K_d]:
+            personagem_pos[0] += velocidade
+        if teclas[pygame.K_w]:
+            personagem_pos[1] -= velocidade
+        if teclas[pygame.K_s]:
+            personagem_pos[1] += velocidade
+
+        # Criar um retângulo do personagem
+        personagem_rect = pygame.Rect(personagem_pos[0], personagem_pos[1], largura_personagem, altura_personagem)
+
+        # Verificar se o personagem está colidindo com o corredor
+        if not corredor_rect.colliderect(personagem_rect):
+            personagem_pos = posicao_anterior  # Reverter para a posição anterior
+            placar -= 10  # Reduzir a pontuação em 10
+
+        # Corrigir a posição se ultrapassar os limites do corredor
+        if personagem_pos[0] < corredor_rect.left:
+            personagem_pos[0] = corredor_rect.left
+            placar -= 10
+        if personagem_pos[0] + largura_personagem > corredor_rect.right:
+            personagem_pos[0] = corredor_rect.right - largura_personagem
+            placar -= 10
+        if personagem_pos[1] < corredor_rect.top:
+            personagem_pos[1] = corredor_rect.top
+            placar -= 10
+        if personagem_pos[1] + altura_personagem > corredor_rect.bottom:
+            personagem_pos[1] = corredor_rect.bottom - altura_personagem
+            placar -= 10
+
+        # Atualizar o cronômetro
+        tempo_decorrido = int(time.time() - tempo_inicial)
+        tempo_restante = tempo_limite - tempo_decorrido
+
+        # Exibir o cronômetro e o placar
         tela.fill(PRETO)
-        pygame.draw.rect(tela, VERDE, (personagem_pos[0], personagem_pos[1], 50, 50))
+        pygame.draw.rect(tela, AZUL, corredor_rect, 2)  # Desenhar as bordas do corredor
+        pygame.draw.rect(tela, VERDE, personagem_rect)  # Desenhar o personagem
+
+        # Formatar e desenhar o tempo restante
+        minutos = tempo_restante // 60
+        segundos = tempo_restante % 60
+        cronometro_texto = f"{minutos:02}:{segundos:02}"
+        desenhar_texto(cronometro_texto, largura // 2 + 200, altura // 2 + 300)
+
+        # Desenhar o placar mais abaixo
+        desenhar_texto(f"Placar: {placar}", largura // 2 - 50, altura // 2 + 300)
+
+        # Verificar se o tempo acabou
+        if tempo_restante <= 0:
+            desenhar_texto("Tempo Esgotado!", largura // 2 - 100, altura // 2)
+            pygame.display.flip()
+            pygame.time.delay(2000)  # Esperar 2 segundos antes de sair
+            break
+
+        pygame.draw.rect(tela, AZUL, quadrado, 2)
+
+        # Sair do jogo se ESC for pressionado
+        if teclas[pygame.K_ESCAPE]:
+            pygame.quit()
+            sys.exit()
+
         pygame.display.flip()
 
-menu()
-jogo()
-
+if __name__ == "__main__":
+    menu()
