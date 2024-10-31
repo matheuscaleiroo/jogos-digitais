@@ -33,6 +33,15 @@ tempo_limite = 60
 
 placar = 0
 
+def segundaTela():
+    tela.fill(PRETO)
+    
+    pygame.display.flip()
+    
+    desenhar_texto("Deu Certo", largura // 2 - 100, altura // 4)
+    
+    
+
 def desenhar_texto(texto, x, y):
     superficie = fonte.render(texto, True, BRANCO)
     tela.blit(superficie, (x, y))
@@ -66,8 +75,7 @@ def menu():
 def jogo():
     global personagem_pos, placar
     velocidade = 2.0
-    corredor_rect = pygame.Rect(largura // 2 - 300, altura // 2 - 200, 900, 400)
-    quadrado = pygame.Rect(largura // 6, altura // 6, 300, 200)
+    corredor_rect = pygame.Rect(largura // 4 - 300, altura // 2 - 200, 1550, 400)
 
     tempo_inicial = time.time()
 
@@ -93,9 +101,12 @@ def jogo():
 
         if not corredor_rect.colliderect(personagem_rect):
             personagem_pos = posicao_anterior  
-            placar -= 10  
-            if velocidade >=0.90:
-               print('ta batendo') 
+            placar -= 10   
+               
+        if personagem_pos[0] + largura_personagem >= corredor_rect.right:
+            personagem_pos[0] = corredor_rect.right - largura_personagem
+            segundaTela()
+            print("funcionou")
 
 
         if personagem_pos[0] < corredor_rect.left:
@@ -123,7 +134,7 @@ def jogo():
         tempo_restante = tempo_limite - tempo_decorrido
 
         tela.fill(PRETO)
-        pygame.draw.rect(tela, AZUL, corredor_rect, 2)  
+        pygame.draw.rect(tela, AZUL, corredor_rect, 1)  
         pygame.draw.rect(tela, VERDE, personagem_rect)  
 
         minutos = tempo_restante // 60
@@ -133,16 +144,18 @@ def jogo():
 
        
         desenhar_texto(f"Placar: {placar}", largura // 2 - 50, altura // 2 + 300)
+        
 
-        remedio_obj =remedio(largura // 2 - 50, altura // 2 + 300,20,VERDE)
+        remedio_obj = remedio(largura // 2, altura // 2,10, VERDE)
+
         remedio_obj.draw(tela)
+        
         if tempo_restante <= 0:
             desenhar_texto("Tempo Esgotado!", largura // 2 - 100, altura // 2)
             pygame.display.flip()
             pygame.time.delay(2000)  
             break
 
-        pygame.draw.rect(tela, AZUL, quadrado, 2)
 
 
         if teclas[pygame.K_ESCAPE]:
