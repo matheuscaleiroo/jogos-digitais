@@ -4,11 +4,12 @@ import time
 
 pygame.init()
 
+# Configuração da tela
 tela = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 largura, altura = tela.get_size()
 pygame.display.set_caption("Menu do Jogo")
 
-class remedio:
+class Remedio:
     def __init__(self, x, y, size, color):
         self.x = x
         self.y = y
@@ -19,32 +20,35 @@ class remedio:
         pygame.draw.rect(screen, self.color, (self.x, self.y, self.size, self.size))
 
 
+# Cores
 PRETO = (0, 0, 0)
 BRANCO = (255, 255, 255)
 VERDE = (0, 255, 0)
 AZUL = (0, 0, 255)
 fonte = pygame.font.SysFont(None, 55)
 
+# Posições e configurações iniciais
 personagem_pos = [largura // 2 - 25, altura // 2 - 25]  
 largura_personagem = 50
 altura_personagem = 50
 
 tempo_limite = 60  
-
 placar = 0
-
-def segundaTela():
-    tela.fill(PRETO)
-    
-    pygame.display.flip()
-    
-    desenhar_texto("Deu Certo", largura // 2 - 100, altura // 4)
-    
-    
+contagem_tela = 0  # Variável de contagem para controlar as telas
 
 def desenhar_texto(texto, x, y):
     superficie = fonte.render(texto, True, BRANCO)
     tela.blit(superficie, (x, y))
+
+def segundaTela():
+    tela.fill(PRETO)
+    desenhar_texto("Deu Certo! Segunda Tela", largura // 2 - 100, altura // 4)
+    pygame.display.flip()
+
+def terceiraTela():
+    tela.fill(PRETO)
+    desenhar_texto("Bem-vindo à Terceira Tela!", largura // 2 - 150, altura // 4)
+    pygame.display.flip()
 
 def menu():
     while True:
@@ -54,12 +58,10 @@ def menu():
                 sys.exit()
 
         tela.fill(PRETO)
-
         desenhar_texto("Menu do Jogo", largura // 2 - 100, altura // 4)
         desenhar_texto("1. Iniciar Jogo", largura // 2 - 150, altura // 2 - 50)
         desenhar_texto("2. Configurações", largura // 2 - 150, altura // 2)
         desenhar_texto("Pressione ESC para Sair", largura // 2 - 150, altura // 2 + 50)
-
         pygame.display.flip()
 
         teclas = pygame.key.get_pressed()
@@ -73,10 +75,10 @@ def menu():
             sys.exit()
 
 def jogo():
-    global personagem_pos, placar
+    global personagem_pos, placar, contagem_tela
     velocidade = 2.0
+    
     corredor_rect = pygame.Rect(largura // 4 - 300, altura // 2 - 200, 1550, 400)
-
     tempo_inicial = time.time()
 
     while True:
@@ -99,64 +101,73 @@ def jogo():
 
         personagem_rect = pygame.Rect(personagem_pos[0], personagem_pos[1], largura_personagem, altura_personagem)
 
-        if not corredor_rect.colliderect(personagem_rect):
-            personagem_pos = posicao_anterior  
-            placar -= 10   
-               
-        if personagem_pos[0] + largura_personagem >= corredor_rect.right:
-            personagem_pos[0] = corredor_rect.right - largura_personagem
-            segundaTela()
-            print("funcionou")
+        # Controle de cada tela baseado na contagem_tela
+        if contagem_tela == 0:
+            if personagem_pos[0] + largura_personagem >= corredor_rect.right:
+                contagem_tela = 1
+                personagem_pos = [largura // 2 - largura_personagem // 2, altura // 2 - altura_personagem // 2]
+                segundaTela()
+            elif personagem_pos[1] < corredor_rect.top:
+                personagem_pos[1] = corredor_rect.top
+                placar=placar-20
+            elif personagem_pos[1] + altura_personagem > corredor_rect.bottom:
+                personagem_pos[1] = corredor_rect.bottom - altura_personagem
+                placar=placar-20
 
+        elif contagem_tela == 1:
+            # Configuração da segunda tela (corredor menor)
+            corredor_rect = pygame.Rect(largura // 3 - 200, altura // 3 - 150, 1000, 500)
+            # Impede que o personagem ultrapasse as bordas da segunda tela
+            if personagem_pos[0] < corredor_rect.left:
+                contagem_tela = 2
+                personagem_pos = [largura // 2 - largura_personagem // 2, altura // 2 - altura_personagem // 2]
+                terceiraTela()
+            elif personagem_pos[0] + largura_personagem > corredor_rect.right:
+                personagem_pos[0] = corredor_rect.right - largura_personagem
+                placar=placar-20
+            elif personagem_pos[1] < corredor_rect.top:
+                personagem_pos[1] = corredor_rect.top
+                placar=placar-20
+            elif personagem_pos[1] + altura_personagem > corredor_rect.bottom:
+                personagem_pos[1] = corredor_rect.bottom - altura_personagem
+                placar=placar-20
 
-        if personagem_pos[0] < corredor_rect.left:
-            personagem_pos[0] = corredor_rect.left
-            placar -= 10
-            if velocidade >=0.90:
-               velocidade=velocidade-0.50
-        if personagem_pos[0] + largura_personagem > corredor_rect.right:
-            personagem_pos[0] = corredor_rect.right - largura_personagem
-            placar -= 10
-            if velocidade >=0.90:
-               velocidade=velocidade-0.50
-        if personagem_pos[1] < corredor_rect.top:
-            personagem_pos[1] = corredor_rect.top
-            placar -= 10
-            if velocidade >=0.90:
-               velocidade=velocidade-0.50
-        if personagem_pos[1] + altura_personagem > corredor_rect.bottom:
-            personagem_pos[1] = corredor_rect.bottom - altura_personagem
-            placar -= 10
-            if velocidade >=0.90:
-               velocidade=velocidade-0.50
+        elif contagem_tela == 2:
+            # Configuração da terceira tela (corredor maior)
+            corredor_rect = pygame.Rect(largura // 4 - 400, altura // 4 - 300, 1800, 900)
+            # Impede que o personagem ultrapasse as bordas da terceira tela
+            if personagem_pos[0] < corredor_rect.left:
+                personagem_pos[0] = corredor_rect.left
+            elif personagem_pos[0] + largura_personagem > corredor_rect.right:
+                personagem_pos[0] = corredor_rect.right - largura_personagem
+            elif personagem_pos[1] < corredor_rect.top:
+                personagem_pos[1] = corredor_rect.top
+            elif personagem_pos[1] + altura_personagem > corredor_rect.bottom:
+                personagem_pos[1] = corredor_rect.bottom - altura_personagem
 
+        # Controle do tempo
         tempo_decorrido = int(time.time() - tempo_inicial)
         tempo_restante = tempo_limite - tempo_decorrido
 
         tela.fill(PRETO)
         pygame.draw.rect(tela, AZUL, corredor_rect, 1)  
-        pygame.draw.rect(tela, VERDE, personagem_rect)  
+        pygame.draw.rect(tela, VERDE, personagem_rect)
 
         minutos = tempo_restante // 60
         segundos = tempo_restante % 60
         cronometro_texto = f"{minutos:02}:{segundos:02}"
         desenhar_texto(cronometro_texto, largura // 2 + 200, altura // 2 + 300)
 
-       
         desenhar_texto(f"Placar: {placar}", largura // 2 - 50, altura // 2 + 300)
-        
 
-        remedio_obj = remedio(largura // 2, altura // 2,10, VERDE)
-
+        remedio_obj = Remedio(largura // 2, altura // 2, 10, VERDE)
         remedio_obj.draw(tela)
         
         if tempo_restante <= 0:
             desenhar_texto("Tempo Esgotado!", largura // 2 - 100, altura // 2)
             pygame.display.flip()
-            pygame.time.delay(2000)  
+            pygame.time.delay(2000)
             break
-
-
 
         if teclas[pygame.K_ESCAPE]:
             pygame.quit()
@@ -166,4 +177,3 @@ def jogo():
 
 if __name__ == "__main__":
     menu()
-    
