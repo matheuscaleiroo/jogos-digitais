@@ -57,6 +57,11 @@ personagem_pos = [largura // 2 - 25, altura // 2 - 25]
 largura_personagem = 50
 altura_personagem = 50
 
+# Carregar o sprite do personagem
+sprite_perso = pygame.image.load("Personagem.png").convert_alpha()
+sprite_perso = pygame.transform.scale(sprite_perso, (largura_personagem, altura_personagem))  # Redimensionar
+
+
 tempo_limite = 60  
 placar = 0
 contagem_tela = 0  # Variável de contagem para controlar as telas
@@ -219,8 +224,11 @@ def jogo():
         tempo_restante = tempo_limite - tempo_decorrido
 
         tela.fill(PRETO)
-        pygame.draw.rect(tela, AZUL, corredor_rect, 1)  
-        pygame.draw.rect(tela, VERDE, personagem_rect)
+        pygame.draw.rect(tela, AZUL, corredor_rect, 1)
+          
+        #Desenha o personagem
+        tela.blit(sprite_perso, personagem_pos , ( 0 , 0 , 80 , 80))
+
 
         # Desenha o inimigo
         inimigo.draw(tela)
