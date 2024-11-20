@@ -11,21 +11,21 @@ largura, altura = tela.get_size()
 pygame.display.set_caption("Menu do Jogo")
 
 class Remedio:
-    def __init__(self, x, y, size, color): 
+    def __init__(self, x, y, size, sprite): 
         self.x = x
         self.y = y
         self.size = size
-        self.color = color
+        self.sprite = sprite
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, (self.x, self.y, self.size, self.size))
+        screen.blit(sprite_remed, (self.x, self.y))
 
 class Inimigo:
-    def __init__(self, x, y, size, color, velocidade):
+    def __init__(self, x, y, size, sprite, velocidade):
         self.x = x
         self.y = y
         self.size = size
-        self.color = color
+        self.sprite = sprite
         self.velocidade = velocidade
         self.direcao_x = random.choice([-1, 1])  # Inicia movendo aleatoriamente em X
         self.direcao_y = random.choice([-1, 1])  # Inicia movendo aleatoriamente em Y
@@ -42,7 +42,7 @@ class Inimigo:
             self.direcao_y *= -1
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, (self.x, self.y, self.size, self.size))
+        pygame.blit(self.sprite , (self.x , self.y))
 
 # Cores
 PRETO = (0, 0, 0)
@@ -54,13 +54,28 @@ fonte = pygame.font.SysFont(None, 55)
 
 # Posições e configurações iniciais
 personagem_pos = [largura // 2 - 25, altura // 2 - 25]  
-largura_personagem = 50
-altura_personagem = 50
+largura_personagem = 60
+altura_personagem = 60
 
 # Carregar o sprite do personagem
 sprite_perso = pygame.image.load("Personagem.png").convert_alpha()
-sprite_perso = pygame.transform.scale(sprite_perso, (largura_personagem, altura_personagem))  # Redimensionar
+sprite_perso = pygame.transform.scale(sprite_perso, (largura_personagem, altura_personagem)) # Redimensionar
 
+#Sprite do inimigo
+sprite_ini = pygame.image.load("Inimigo.png").convert_alpha()
+sprite_ini = pygame.transform.scale(sprite_ini, (largura_personagem, altura_personagem)) # Redimensionar
+
+#Imagem De Fundo
+imagem_fundo = pygame.image.load("Cenario.png").convert_alpha()
+imagem_fundo = pygame.transform.scale(imagem_fundo , (1700 , 900))
+
+#Sprite Remedio
+sprite_remed = pygame.image.load("Remedio.png").convert_alpha()
+sprite_remed = pygame.transform.scale(sprite_remed , (35 , 15))
+
+#Sprite Menu
+sprite_menu = pygame.image.load("Menu.png").convert_alpha()
+sprite_menu = pygame.transform.scale(sprite_menu , (1600 , 900))
 
 tempo_limite = 60  
 placar = 0
@@ -80,12 +95,12 @@ def desenhar_texto(texto, x, y, tamanho=55, cor=BRANCO):
     tela.blit(superficie, (x, y))
 
 def segundaTela():
-    tela.fill(PRETO)
+    tela.blit(imagem_fundo , (0 , 0))
     desenhar_texto("Fase 1", largura // 2 - 75, altura // 4, tamanho=80)
     pygame.display.flip()
 
 def terceiraTela():
-    tela.fill(PRETO)
+    tela.blit(imagem_fundo , (0 , 0))
     desenhar_texto("Fase 2", largura // 2 - 75, altura // 4, tamanho=80)
     
     # Definindo o caminho do corredor com curvas retas
@@ -171,7 +186,7 @@ def jogo():
     # Criar o inimigo
     inimigo = Inimigo(random.randint(corredor_rect.left + 20, corredor_rect.right - 20),
                      random.randint(corredor_rect.top + 20, corredor_rect.bottom - 20),
-                     40, VERMELHO, 2)
+                     largura_personagem, sprite_ini, 2)
 
     # Criar o segundo inimigo (para a terceira fase)
     inimigo2 = None  # Inicialmente, não criamos o inimigo 2 até a terceira fase
@@ -253,7 +268,7 @@ def jogo():
             tempo_paralisado = time.time()
             inimigo = Inimigo(random.randint(corredor_rect.left + 20, corredor_rect.right - 20),
                              random.randint(corredor_rect.top + 20, corredor_rect.bottom - 20),
-                             40, VERMELHO, 2)
+                             largura_personagem, sprite_ini, 2)
         # Verifica colisão com o inimigo 2
         if inimigo2 and personagem_rect.colliderect(pygame.Rect(inimigo2.x, inimigo2.y, inimigo2.size, inimigo2.size)):
             placar -= 20
@@ -261,7 +276,7 @@ def jogo():
             tempo_paralisado = time.time()
             inimigo2 = Inimigo(random.randint(corredor_rect.left + 20, corredor_rect.right - 20),
                                random.randint(corredor_rect.top + 20, corredor_rect.bottom - 20),
-                               40, VERMELHO, 2)
+                               largura_personagem, sprite_ini, 2)
 
 
         # Paralisando o personagem
@@ -277,7 +292,7 @@ def jogo():
             if inimigo2 is None:
                 inimigo2 = Inimigo(random.randint(corredor_rect.left + 20, corredor_rect.right - 20),
                                    random.randint(corredor_rect.top + 20, corredor_rect.bottom - 20),
-                                   40, VERMELHO, 2)
+                                   largura_personagem, sprite_ini, 2)
 
             # Mover e desenhar o segundo inimigo
             inimigo2.mover()
@@ -304,7 +319,8 @@ def jogo():
         tempo_decorrido = int(time.time() - tempo_inicial)
         tempo_restante = tempo_limite - tempo_decorrido
 
-        tela.fill(PRETO)
+        #Imagem de fundo 
+        tela.blit(imagem_fundo , (0 , 0))
         pygame.draw.rect(tela, AZUL, corredor_rect, 1)
 
         # Desenha o número da fase no topo da tela (sempre visível)
@@ -315,9 +331,10 @@ def jogo():
         tela.blit(sprite_perso, personagem_pos, (0, 0, 80, 80))
 
         # Desenha os inimigos
-        inimigo.draw(tela)
+        tela.blit(inimigo.sprite, (inimigo.x, inimigo.y))
         if inimigo2:  # Desenha o segundo inimigo apenas se ele foi criado
-            inimigo2.draw(tela)
+            tela.blit(inimigo2.sprite, (inimigo2.x, inimigo2.y))
+
 
         # Cronômetro e Placar
         minutos = tempo_restante // 60
